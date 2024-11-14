@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<SqlWorkbenchSqlProject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Name="Crear_Tablas">
+  <Items>
+    <LogicalFolder Name="Connections" Type="2" Sorted="true">
+      <Items>
+        <ConnectionNode Name="LAPTOP-LQ6DRR5B:LAPTOP-LQ6DRR5B\arace">
+          <Created>2024-10-22T14:31:11.7051305-03:00</Created>
+          <Type>SQL</Type>
+          <Server>LAPTOP-LQ6DRR5B</Server>
+          <UserName />
+          <Authentication>Windows Authentication</Authentication>
+          <InitialDB />
+          <LoginTimeout>30</LoginTimeout>
+          <TrustServerCertificate>True</TrustServerCertificate>
+          <HostNameInServerCertificate />
+          <EncryptionOption>True</EncryptionOption>
+          <ExecutionTimeout>0</ExecutionTimeout>
+          <ConnectionProtocol>NotSpecified</ConnectionProtocol>
+          <ApplicationName>Microsoft SQL Server Management Studio - Query</ApplicationName>
+        </ConnectionNode>
+      </Items>
+    </LogicalFolder>
+    <LogicalFolder Name="Queries" Type="0" Sorted="true">
+      <Items>
+        <FileNode Name="00-ScriptCreacionGeneral-Viejo.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:LAPTOP-LQ6DRR5B:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>LAPTOP-LQ6DRR5B</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>00-ScriptCreacionGeneral-Viejo.sql</FullPath>
+        </FileNode>
+        <FileNode Name="01-ScriptCreacionBDSquemas.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:LAPTOP-LQ6DRR5B:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>LAPTOP-LQ6DRR5B</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>01-ScriptCreacionBDSquemas.sql</FullPath>
+        </FileNode>
+        <FileNode Name="02-ScriptCreacionClientes.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>02-ScriptCreacionClientes.sql</FullPath>
+        </FileNode>
+        <FileNode Name="03-ScriptCreacionProductos.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>03-ScriptCreacionProductos.sql</FullPath>
+        </FileNode>
+        <FileNode Name="04-ScriptCreacionSucursales.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>04-ScriptCreacionSucursales.sql</FullPath>
+        </FileNode>
+        <FileNode Name="05-ScriptCreacionVentas.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>05-ScriptCreacionVentas.sql</FullPath>
+        </FileNode>
+      </Items>
+    </LogicalFolder>
+    <LogicalFolder Name="Miscellaneous" Type="3" Sorted="true">
+      <Items />
+    </LogicalFolder>
+  </Items>
+</SqlWorkbenchSqlProject>

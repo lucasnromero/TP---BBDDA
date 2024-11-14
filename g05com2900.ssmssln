@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# SQL Server Management Studio Solution File, Format Version 20.00
+VisualStudioVersion = 15.0.28307.421
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "Crear_Tablas", "Crear_Tablas\Crear_Tablas.ssmssqlproj", "{32B7E6BF-3DF3-4D5E-BF46-7C768F6899BD}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "stored procedures", "stored procedures\stored procedures.ssmssqlproj", "{B7770C1F-415F-48FB-88C2-039007E48B1C}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "pruebas", "pruebas\pruebas.ssmssqlproj", "{B9813E79-F3DF-4078-B6E9-72045DAAC3FE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Default|Default = Default|Default
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{32B7E6BF-3DF3-4D5E-BF46-7C768F6899BD}.Default|Default.ActiveCfg = Default
+		{B7770C1F-415F-48FB-88C2-039007E48B1C}.Default|Default.ActiveCfg = Default
+		{7F74193C-5D6A-4C14-80FC-84D44CA7D018}.Default|Default.ActiveCfg = Default
+		{B9813E79-F3DF-4078-B6E9-72045DAAC3FE}.Default|Default.ActiveCfg = Default
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CCED87B0-EED9-428E-ABD3-2E5024B04622}
+	EndGlobalSection
+EndGlobal
