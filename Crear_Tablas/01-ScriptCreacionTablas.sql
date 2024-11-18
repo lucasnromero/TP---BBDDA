@@ -18,8 +18,8 @@
 use master
 go
 
---Eliminar la base de datos si esta creada, si no comente la linea de drop    
-drop database g05com2900
+--Elimina la base de datos si esta creada    
+drop database if exists g05com2900
 go
 
 --Apartir de aqui comienza el script para poder crear la base de datos y todas sus tablas
@@ -79,9 +79,9 @@ create table clientes.Cliente (
     id_tipo_de_cliente int not null,
     id_ciudad int not null,
     id_genero int not null,
-    nombre varchar(50) not null,
-    apellido varchar(50) not null,
-    dni int not null unique,
+    nombre varchar(50),
+    apellido varchar(50),
+    dni int unique,
     fecha_nacimiento date,
     direccion varchar(60),
     eliminado bit not null default(0),
@@ -95,12 +95,24 @@ go
 create table sucursales.Sucursal (
     id int identity(1,1) primary key,
     ciudad varchar(60) not null,
-    localidad varchar(100) not null,
 	direccion varchar(100) not null,
 	horario varchar(100) not null,
 	telefono varchar(20) not null,
-    eliminado bit not null default(0),
-    constraint unq_sucursal unique(ciudad,localidad)
+    eliminado bit not null default(0)
+);
+go
+
+--Creamos la tabla para los cargos del esquema de sucursales
+create table sucursales.TipoDeCargo ( 
+	id int identity(1,1) primary key,
+	tipo varchar(40) not null unique
+);
+go
+
+--Creamos la tabla para los turnos del esquema de sucursales
+create table sucursales.Turno (
+	id int identity(1,1) primary key,
+	turno varchar(30) not null unique
 );
 go
 
@@ -108,18 +120,21 @@ go
 create table sucursales.Empleado (
     legajo int primary key,
     id_genero int,
-    id_sucursal int,
     nombre varchar(50) not null,
     apellido varchar(50) not null,
+	dni int not null,
+	direccion varchar(100) not null,
 	email_personal varchar(75) not null,
 	email_empresa varchar(75) not null,
-	cargo varchar(30) not null,
-	turno varchar(30) not null,
     cuil int not null unique,
+	id_cargo int not null,
+	id_sucursal int not null,
+	id_turno int not null,
     eliminado bit not null default(0),
-    direccion varchar(100),
     constraint fk_genero_empleado foreign key (id_genero) references clientes.Genero(id),
-    constraint fk_sucursal foreign key (id_sucursal) references sucursales.Sucursal(id)
+    constraint fk_sucursal foreign key (id_sucursal) references sucursales.Sucursal(id),
+	constraint fk_cargo foreign key (id_cargo) references sucursales.TipoDeCargo(id),
+	constraint fk_turno foreign key (id_turno) references sucursales.Turno
 );
 go
 
@@ -130,21 +145,29 @@ create table ventas.MedioDePago (
 );
 go
 
+--Creamos la tabla para los pagos del esquema ventas
+create table ventas.Pago (
+	id int identity(1,1) primary key,
+	identificador varchar(30),
+	monto decimal(10,2),
+	fecha smalldatetime default(cast(getdate()as smalldatetime)),
+	id_medio int
+	constraint fk_medio_pago foreign key (id_medio) references ventas.MedioDePago(id)
+);
+
 --Creamos la tabla para las ventas del esquema ventas
 create table ventas.Venta (
     id int identity(1,1) primary key,
-    id_cliente int,
-    id_empleado int,
-    id_sucursal int,
-    id_medio_de_pago int,
+    id_cliente int not null,
+    id_empleado int not null,
+    id_sucursal int not null,
     total decimal(10,2) check (total >=0),
 	cantidad_de_productos int check (cantidad_de_productos >= 0),
-    fecha date,
-    hora time(0),
+    fecha date default (cast(getdate() as date)),
+    hora time default (cast(getdate() as time)),
     constraint fk_cliente foreign key (id_cliente) references clientes.Cliente(id),
     constraint fk_empleado foreign key (id_empleado) references sucursales.Empleado(legajo),
-    constraint fk_sucursal_venta foreign key (id_sucursal) references sucursales.Sucursal(id),
-    constraint fk_medio_de_pago foreign key (id_medio_de_pago) references ventas.MedioDePago(id),
+    constraint fk_sucursal_venta foreign key (id_sucursal) references sucursales.Sucursal(id),    
 );
 go
 
@@ -160,87 +183,55 @@ create table ventas.Factura (
     id int identity(1,1) primary key,
     id_venta int,
     id_tipo_de_factura int,
+	total_iva decimal(10,2) check(total_iva >=0),
+	cuit int,
+	estado varchar(30) check(estado in ('Pagado','Pendiente')),
     constraint fk_venta_factura foreign key (id_venta) references ventas.Venta(id),
     constraint fk_tipo_de_factura foreign key (id_tipo_de_factura) references ventas.TipoDeFactura(id)
+);
+go
+
+--Creamos la tabla para las notas de credito del esquema ventas
+create table ventas.NotaDeCredito (
+	id int identity(1,1),
+	id_factura int not null,
+	motivo varchar(100),
+	monto decimal(10,2),
+	fecha smalldatetime default(cast(getdate() as smalldatetime)),
+	constraint fk_factura_nota foreign key (id_factura) references ventas.Factura(id)
 );
 go
 
 --Creamos la tabla para las lineas de producto del esquema productos
 create table productos.LineaDeProducto (
     id int identity(1,1) primary key,
-    nombre varchar(100) not null unique
+    nombre varchar(50) not null unique
 );
 go
 
 --Creamos la tabla para los productos del esquema productos
 create table productos.Producto (
-    id int identity(1,1) primary key,
-    id_linea_de_producto int,
-    nombre_producto varchar(100) not null,
-    precio decimal(10,2) not null,
+    id int primary key,
+    id_linea_de_producto int not null,
+    categoria varchar(100),
+	nombre varchar(100) not null,
+	precio decimal(10,2) not null,
+	precio_referencia decimal(10,2),
+	unidad_referencia varchar(50),
+	fecha smalldatetime default(cast(getdate() as smalldatetime)),
     constraint fk_linea_de_producto foreign key (id_linea_de_producto) references productos.LineaDeProducto(id)
 );
 go
 
---Creamos la tabla para los catalogos que vienen como archivos del esquema productos
-create table productos.Catalogo (
-    id int primary key,
-    categoria varchar(100),
-    nombre varchar(100),
-    precio decimal(8,2),
-    precio_referencia decimal(10,2),
-    unidad_referencia varchar(10),
-    fecha datetime
-);
-go
-
---Creamos la tabla para los accesorios electronicos que vienen como archivos del esquema productos
-create table productos.AccesorioElectronico (
-    id int identity(1,1) primary key,
-    producto varchar(100),
-    precio_unitario_pesos decimal(10,2)
-);
-go
-
---Creamos la tabla para los productos importados que vienen como archivos del esquema productos
-create table productos.ProductoImportado (
-    id_producto int primary key,
-    cantidad_por_unidad varchar(100),
-    nombre varchar(100),
-    categoria varchar(100),
-    proveedor varchar(100),
-    precio_por_unidad decimal(10,2)
-);
-go
-
 --Creamos la tabla para las lineas de venta del esquema ventas
-create table ventas.LineaDeVenta (
+create table ventas.DetalleDeVenta (
     id int identity(1,1) primary key,
-    id_venta int,
-    id_producto int,
-    id_catalogo int,
-    id_producto_importado int,
-    id_accesorio int,
-    can_producto int default 0 check (can_producto >= 0),
-    pre_producto decimal(10,2) default 0 check (pre_producto >= 0),
-    sub_producto as (can_producto * pre_producto) persisted,
-    can_catalogo int default 0 check (can_catalogo >= 0),
-    pre_catalogo decimal(10,2) default 0 check (pre_catalogo >= 0),
-    sub_catalogo as (can_catalogo * pre_catalogo) persisted,
-    can_accesorio int default 0 check (can_accesorio >= 0),
-    pre_accesorio decimal(10,2) default 0 check (pre_accesorio >= 0),
-    sub_accesorio as (can_accesorio * pre_accesorio) persisted,
-    can_producto_importado int default 0 check (can_producto_importado >= 0),
-    pre_producto_importado decimal(10,2) default 0 check (pre_producto_importado >= 0),
-    sub_producto_importado as (can_producto_importado * pre_producto_importado) persisted,
-    constraint fk_venta_linea foreign key (id_venta) references ventas.Venta(id),
-    constraint fk_producto_linea foreign key (id_producto) references productos.Producto(id),
-    constraint fk_catalogo_linea foreign key (id_catalogo) references productos.Catalogo(id),
-    constraint fk_producto_importado_linea foreign key (id_producto_importado) references productos.ProductoImportado(id_producto),
-    constraint fk_accesorio_linea foreign key (id_accesorio) references productos.AccesorioElectronico(id),
-    constraint unq_venta_producto unique (id_venta, id_producto),
-    constraint unq_venta_producto_importado unique (id_venta, id_producto_importado),
-    constraint unq_venta_catalogo unique (id_venta, id_catalogo),
-    constraint unq_venta_accesorio unique (id_venta, id_accesorio)
+    id_venta int not null,
+	id_producto int not null,
+	cantidad int check(cantidad >=1),
+	precio_unitario decimal(10,2),
+	subtotal as (cantidad * precio_unitario) persisted,
+	constraint fk_venta_detalle foreign key (id_venta) references ventas.Venta(id),
+	constraint fk_producto_detalle foreign key (id_producto) references productos.Producto(id)
 );
 go
