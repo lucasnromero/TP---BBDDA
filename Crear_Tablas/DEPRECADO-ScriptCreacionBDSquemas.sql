@@ -1,3 +1,5 @@
+--DEPRECADO
+
 --Fecha de entrega: 05/11
 --Número de grupo: 05
 --Materia: BASES DE DATOS APLICADAS
