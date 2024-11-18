@@ -1,3 +1,5 @@
+--DEPRECADO
+
 --Para ejecutar este script primero debio haber ejecutado el script de CreacionClientes
 
 --Nos posicionamos en la base datos
@@ -28,7 +30,7 @@ go
 
 --Cremos el store procedure para insertar las cuidades
 create or alter procedure clientes.InsertarCiudad
-    @nombre varchar(20)
+    @nombre varchar(60)
 as
 begin
     --Corroboramos que la ciudad que queremos insertar no exista
@@ -48,7 +50,7 @@ go
 
 --Creamos el store procedure para insertar los generos
 create or alter procedure clientes.InsertarGenero
-    @tipo varchar(10)
+    @tipo varchar(30)
 as
 begin
     --Corroboramos que el genero que queremos insertar no exista
@@ -71,11 +73,11 @@ create or alter procedure clientes.InsertarCliente
     @id_tipo_de_cliente int,
     @id_ciudad int,
     @id_genero int,
-    @nombre varchar(20),
-    @apellido varchar(20),
+    @nombre varchar(50),
+    @apellido varchar(50),
     @dni int,
     @fecha_nacimiento date,
-    @direccion varchar(50)
+    @direccion varchar(60)
 as
 begin
     --Corroboramos que el tipo que queremos insertar no exista
@@ -84,6 +86,7 @@ begin
         print 'Ya existe un Cliente con ese DNI.'
         return;
     end
+
     --Insertamos el cliente
     insert into clientes.Cliente(
         id_tipo_de_cliente, id_ciudad, id_genero, nombre, apellido, dni, fecha_nacimiento, direccion
@@ -96,4 +99,3 @@ begin
     print 'Cliente insertado correctamente con ID: ' + cast(@NuevoID as varchar(4));
 end;
 go
-
