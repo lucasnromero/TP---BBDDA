@@ -98,6 +98,7 @@ create table sucursales.Sucursal (
 	direccion varchar(100) not null,
 	horario varchar(100) not null,
 	telefono varchar(20) not null,
+	cuit varchar(20) not null,
     eliminado bit not null default(0)
 );
 go
@@ -126,7 +127,7 @@ create table sucursales.Empleado (
 	direccion varchar(100) not null,
 	email_personal varchar(75) not null,
 	email_empresa varchar(75) not null,
-    cuil int not null unique,
+    cuil varchar(15) not null unique,
 	id_cargo int not null,
 	id_sucursal int not null,
 	id_turno int not null,
@@ -184,7 +185,7 @@ create table ventas.Factura (
     id_venta int,
     id_tipo_de_factura int,
 	total_iva decimal(10,2) check(total_iva >=0),
-	cuit int,
+	cuit varchar(20),
 	estado varchar(30) check(estado in ('Pagado','Pendiente')),
     constraint fk_venta_factura foreign key (id_venta) references ventas.Venta(id),
     constraint fk_tipo_de_factura foreign key (id_tipo_de_factura) references ventas.TipoDeFactura(id)
