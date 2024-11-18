@@ -1,3 +1,5 @@
+--DEPRECADO
+
 --Nos posicionamos en la base datos
 use g05com2900
 go
