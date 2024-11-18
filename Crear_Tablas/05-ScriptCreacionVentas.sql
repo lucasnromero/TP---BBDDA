@@ -1,3 +1,7 @@
+--DEPRECADO
+
+
+
 --Para ejecutar este script primero debio haber ejecutado el script de CreacionSucursales, CreacionProductos y CreacionClientes
 
 --Nos posicionamos en la base datos
