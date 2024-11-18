@@ -1,5 +1,3 @@
---Para ejecutar este script primero debio haber ejecutado el script de CreacionClientes
-
 --Nos posicionamos en la base datos
 use g05com2900
 go
@@ -98,7 +96,26 @@ begin
 end;
 go
 
---Creamos los store procedures de inserccion para el esquema de sucursales
+--Creamos los store procedures de inserccion para el esquema de sucursales y algunas funciones
+
+--Creamos la funcion para calcular el cuit de las sucursales
+create or alter function sucursales.CalcularCUIT (
+    @id_sucursal int
+)
+returns varchar(15)
+as
+begin
+    declare @prefijo char(2) = '30'  --Prefijo gen√©rico para sucursales
+    declare @verificador int = 9      --Verificador gen√©rico
+    declare @cuit varchar(15)
+    --Completar el id de la sucursal con ceros a la izquierda para tener siempre 8 d√≠gitos
+    declare @id_sucursal_completo varchar(8)
+	set @id_sucursal_completo = right('00000000' + cast(@id_sucursal as varchar(8)), 8)
+    --Formamos el cuit con el formato prefijo-id-verificador
+    set @cuit = @prefijo + '-' + @id_sucursal_completo + '-' + cast(@verificador as varchar(1))
+    return @cuit
+end;
+go
 
 --Creamos el store procedure para insertar sucursales
 create or alter procedure sucursales.InsertarSucursal
@@ -109,7 +126,7 @@ create or alter procedure sucursales.InsertarSucursal
 as
 begin
     --Corroboramos si ya existe una sucursal con la misma ciudad y localidad
-    if exists (select 1 from sucursales.Sucursal where direccion = @direccion)
+    if exists (select 1 from sucursales.Sucursal where direccion = @direccion and ciudad = @ciudad)
     begin
         print 'Ya existe una sucursal con esa direccion.'
         return;
@@ -117,8 +134,16 @@ begin
     --Insertamos la nueva sucursal
     insert into sucursales.Sucursal (ciudad, direccion, horario, telefono)
     values (@ciudad, @direccion, @horario, @telefono);
-    --Mostramos por pantalla el id de la nueva sucursal
+    --Declaramos el id de la sucursal que acabamos de insertar
     declare @NuevoID int = scope_identity();
+	--Calculamos el cuit de la sucursal
+	declare @cuit varchar(15);
+	set @cuit = sucursal.CalcularCUIT(@NuevoID);
+	--Agregamos en la sucursal el cuit luego de calcularlo
+	update sucursales.Sucursal
+	set cuit = 
+	where id = @NuevoID;
+	--Mostramos por pantalla el id de la nueva sucursal
     print 'Sucursal insertada correctamente con ID: ' + cast(@NuevoID as varchar(4));
 end;
 go
@@ -176,15 +201,13 @@ begin
     declare @resto int
     declare @verificador int
     declare @cuil varchar(15)
-
-    -- asignar prefijo seg˙n el gÈnero
+    --Asignamos el prefijo seg√∫n el g√©nero
     set @prefijo = case @id_genero
-        when 1 then '20' -- masculino
-        when 2 then '27' -- femenino
-        else '23'        -- generico
+        when 1 then '20' --Masculino
+        when 2 then '27' --Femenino
+        else '23'        --Generico
     end
-
-    -- calcular el dÌgito verificador usando mÛdulo 11
+    --Calculamos el d√≠gito verificador usando m√≥dulo 11
     set @suma = 
           (substring(@prefijo, 1, 1) * 5) +
           (substring(@prefijo, 2, 1) * 4) +
@@ -204,7 +227,6 @@ begin
 
 	--Usamos el resto para definir el verificador del cuil
     set @resto = @suma % 11
-
     if @resto = 0 --Si el resto es 0 el verificador es 0
         set @verificador = 0
     else if @resto = 1 --Si el resto es 1 el prefijo cambia a 23 y los verificadores cambiar a 9 para los masculinos y 4 para femeninos o genericos
@@ -214,10 +236,8 @@ begin
         end
     else --Si el resto es distinto el verificador se calculo con 11 menos el resto
         set @verificador = 11 - @resto
-
     --Formamos el cuil con el formato prefijo-dni-verificador
     set @cuil = @prefijo + '-' + cast(@dni as varchar(8)) + '-' + cast(@verificador as varchar(1))
-
     return @cuil
 end;
 go
