@@ -1,3 +1,5 @@
+--DEPRECADO
+
 --Para ejecutar este script primero debio haber ejecutado el script de CreacionVentas
 
 --Nos posicionamos en la base datos
