@@ -146,18 +146,6 @@ create table ventas.MedioDePago (
 );
 go
 
---Creamos la tabla para los pagos del esquema ventas
-create table ventas.Pago (
-	id int identity(1,1) primary key,
-	id_factura int,
-	identificador varchar(30),
-	monto decimal(10,2),
-	fecha smalldatetime default(cast(getdate()as smalldatetime)),
-	id_medio int
-	constraint fk_medio_pago foreign key (id_medio) references ventas.MedioDePago(id),
-	constraint fk_factura_pago foreign key (id_factura
-);
-
 --Creamos la tabla para las ventas del esquema ventas
 create table ventas.Venta (
     id int identity(1,1) primary key,
@@ -184,7 +172,7 @@ go
 --Creamos la tabla para las facturas del esquema ventas
 create table ventas.Factura (
     id int identity(1,1) primary key,
-	codigo varchar(50) default(id),
+	codigo varchar(50) default null,
     id_venta int,
     id_tipo_de_factura int,
 	total_iva decimal(10,2) check(total_iva >=0),
@@ -192,6 +180,19 @@ create table ventas.Factura (
 	estado varchar(30) check(estado in ('Pagado','Pendiente')) default('Pendiente'),
     constraint fk_venta_factura foreign key (id_venta) references ventas.Venta(id),
     constraint fk_tipo_de_factura foreign key (id_tipo_de_factura) references ventas.TipoDeFactura(id)
+);
+go
+
+--Creamos la tabla para los pagos del esquema ventas
+create table ventas.Pago (
+	id int identity(1,1) primary key,
+	id_factura int,
+	identificador varchar(30),
+	monto decimal(10,2),
+	fecha smalldatetime default(cast(getdate()as smalldatetime)),
+	id_medio int
+	constraint fk_medio_pago foreign key (id_medio) references ventas.MedioDePago(id),
+	constraint fk_factura_pago foreign key (id_factura) references ventas.Factura(id)
 );
 go
 
@@ -220,8 +221,8 @@ create table productos.Producto (
     categoria varchar(100),
 	nombre varchar(100) not null,
 	precio decimal(10,2) not null,
-	precio_referencia decimal(10,2),
-	unidad_referencia varchar(50),
+	precio_referencia decimal(10,2) default null,
+	unidad_referencia varchar(50) default('ud'),
 	fecha smalldatetime default(cast(getdate() as smalldatetime)),
     constraint fk_linea_de_producto foreign key (id_linea_de_producto) references productos.LineaDeProducto(id)
 );
