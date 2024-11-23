@@ -273,8 +273,7 @@ begin
     values (@legajo, @id_genero, @nombre, @apellido, @dni, @direccion, @email_personal, @email_empresa,
 	@cuil, @id_cargo, @id_sucursal, @id_turno);
     --Mostramos por pantalla el id del nuevo empleado
-    declare @NuevoID int = scope_identity();
-    print 'Empleado insertado correctamente con ID:' + cast(@NuevoID as varchar(4));
+    print 'Empleado insertado correctamente con Legajo: ' + cast(@legajo as varchar(20));
 end;
 go
 
@@ -377,11 +376,11 @@ go
 --Creamos el store procedure para insertar la venta completa
 create or alter procedure ventas.InsertarVentaCompleta
     @id_cliente int,
-    @id_empleado int,
+    @legajo_empleado int,
     @id_sucursal int,
 	@id_tipo_de_factura int,
     @productos ventas.venta_producto_type readonly, --Tipo de tabla para los productos(con id_producto y cantidad)
-	@codigo varchar(50)
+	@codigo varchar(50)= null
 as
 begin
     --Variables para almacenar datos intermedios
@@ -392,8 +391,8 @@ begin
     declare @subtotal decimal(10, 2);
 	declare @cuit varchar(20);
     --Insertamos la venta y obtenemos su id respectivo
-    insert into ventas.Venta(id_cliente, id_empleado, id_sucursal, total, cantidad_de_productos)
-    values (@id_cliente, @id_empleado, @id_sucursal, @total, @cantidad_de_productos);
+    insert into ventas.Venta(id_cliente, legajo_empleado, id_sucursal, total, cantidad_de_productos)
+    values (@id_cliente, @legajo_empleado, @id_sucursal, @total, @cantidad_de_productos);
 	set @id_venta = scope_identity();
     --Iteramos sobre los productos de la venta
     declare @id_producto int, @cantidad int;
@@ -472,15 +471,30 @@ begin
 end;
 go
 
+--Creamos el trigger para insertar la fecha por defecto
+create or alter trigger productos.SetearFechaPorDefecto
+on productos.Producto
+after insert
+as
+begin
+	--Actualizamos el campo de la fecha con la fecha actual si no se especifico en la inserccion
+	update productos.Producto
+	set fecha = (cast(getdate() as smalldatetime)) 
+	from  productos.Producto
+	inner join Inserted on productos.Producto.id = Inserted.id
+	where Inserted.fecha is null
+end;
+go
+
 --Creamos el store procedure para insertar un producto
 create or alter procedure productos.InsertarProducto
 	@id_linea_de_producto int,
 	@categoria varchar(100),
 	@nombre varchar(100),
 	@precio decimal(10,2),
-	@precio_referencia decimal(10,2),
-	@unidad_referencia varchar(50),
-	@fecha smalldatetime
+	@precio_referencia decimal(10,2) = null,
+	@unidad_referencia varchar(50) = 'ud',
+	@fecha smalldatetime = null
 as
 begin
 	--Insertamos el producto
