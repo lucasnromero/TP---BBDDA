@@ -81,7 +81,7 @@ create table clientes.Cliente (
     id_genero int not null,
     nombre varchar(50),
     apellido varchar(50),
-    dni int unique,
+    dni int,
     fecha_nacimiento date,
     direccion varchar(60),
     eliminado bit not null default(0),
@@ -98,7 +98,7 @@ create table sucursales.Sucursal (
 	direccion varchar(100) not null,
 	horario varchar(100) not null,
 	telefono varchar(20) not null,
-	cuit varchar(20) not null,
+	cuit varchar(20),
     eliminado bit not null default(0)
 );
 go
