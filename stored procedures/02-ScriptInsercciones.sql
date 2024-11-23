@@ -69,11 +69,11 @@ create or alter procedure clientes.InsertarCliente
     @id_tipo_de_cliente int,
     @id_ciudad int,
     @id_genero int,
-    @nombre varchar(50),
-    @apellido varchar(50),
-    @dni int,
-    @fecha_nacimiento date,
-    @direccion varchar(60)
+    @nombre varchar(50) = null,
+    @apellido varchar(50) = null,
+    @dni int = null,
+    @fecha_nacimiento date = null,
+    @direccion varchar(60) = null 
 as
 begin
     --Corroboramos que el tipo que queremos insertar no exista
@@ -128,7 +128,7 @@ begin
     --Corroboramos si ya existe una sucursal con la misma ciudad y localidad
     if exists (select 1 from sucursales.Sucursal where direccion = @direccion and ciudad = @ciudad)
     begin
-        print 'Ya existe una sucursal con esa direccion.'
+        print 'Ya existe una sucursal con esa direccion en esa ciudad.'
         return;
     end
     --Insertamos la nueva sucursal
@@ -138,7 +138,7 @@ begin
     declare @NuevoID int = scope_identity();
 	--Calculamos el cuit de la sucursal
 	declare @cuit varchar(15);
-	set @cuit = sucursal.CalcularCUIT(@NuevoID);
+	set @cuit = sucursales.CalcularCUIT(@NuevoID);
 	--Agregamos en la sucursal el cuit luego de calcularlo
 	update sucursales.Sucursal
 	set cuit = @cuit
@@ -174,7 +174,7 @@ create or alter procedure sucursales.InsertarTurno
 as
 begin
 	--Corroboramos si ya existe el turno
-	if exists (select 1 from sucursales.TipoDeCargo where tipo = @turno)
+	if exists (select 1 from sucursales.Turno where turno = @turno)
 	begin
 		print 'Ya existe un turno con esa descripcion'
 		return;
