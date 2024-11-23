@@ -127,7 +127,7 @@ create table sucursales.Empleado (
 	direccion varchar(100) not null,
 	email_personal varchar(75) not null,
 	email_empresa varchar(75) not null,
-    cuil varchar(15) not null unique,
+    cuil varchar(15) unique,
 	id_cargo int not null,
 	id_sucursal int not null,
 	id_turno int not null,
@@ -150,14 +150,14 @@ go
 create table ventas.Venta (
     id int identity(1,1) primary key,
     id_cliente int not null,
-    id_empleado int not null,
+    legajo_empleado int not null,
     id_sucursal int not null,
     total decimal(10,2) check (total >=0),
 	cantidad_de_productos int check (cantidad_de_productos >= 0),
     fecha date default (cast(getdate() as date)),
-    hora time default (cast(getdate() as time)),
+    hora time(0) default (cast(getdate() as time)),
     constraint fk_cliente foreign key (id_cliente) references clientes.Cliente(id),
-    constraint fk_empleado foreign key (id_empleado) references sucursales.Empleado(legajo),
+    constraint fk_empleado foreign key (legajo_empleado) references sucursales.Empleado(legajo),
     constraint fk_sucursal_venta foreign key (id_sucursal) references sucursales.Sucursal(id),    
 );
 go
@@ -173,11 +173,11 @@ go
 create table ventas.Factura (
     id int identity(1,1) primary key,
 	codigo varchar(50) default null,
-    id_venta int,
+    id_venta int not null,
     id_tipo_de_factura int,
 	total_iva decimal(10,2) check(total_iva >=0),
 	cuit varchar(20),
-	estado varchar(30) check(estado in ('Pagado','Pendiente')) default('Pendiente'),
+	estado varchar(30) check(estado in ('Pagada','Pendiente')) default('Pendiente'),
     constraint fk_venta_factura foreign key (id_venta) references ventas.Venta(id),
     constraint fk_tipo_de_factura foreign key (id_tipo_de_factura) references ventas.TipoDeFactura(id)
 );
@@ -188,9 +188,9 @@ create table ventas.Pago (
 	id int identity(1,1) primary key,
 	id_factura int,
 	identificador varchar(30),
+	id_medio int,
 	monto decimal(10,2),
 	fecha smalldatetime default(cast(getdate()as smalldatetime)),
-	id_medio int
 	constraint fk_medio_pago foreign key (id_medio) references ventas.MedioDePago(id),
 	constraint fk_factura_pago foreign key (id_factura) references ventas.Factura(id)
 );
@@ -216,14 +216,14 @@ go
 
 --Creamos la tabla para los productos del esquema productos
 create table productos.Producto (
-    id int primary key,
+    id int identity(1,1) primary key,
     id_linea_de_producto int not null,
     categoria varchar(100),
 	nombre varchar(100) not null,
 	precio decimal(10,2) not null,
-	precio_referencia decimal(10,2) default null,
-	unidad_referencia varchar(50) default('ud'),
-	fecha smalldatetime default(cast(getdate() as smalldatetime)),
+	precio_referencia decimal(10,2),
+	unidad_referencia varchar(50),
+	fecha smalldatetime,
     constraint fk_linea_de_producto foreign key (id_linea_de_producto) references productos.LineaDeProducto(id)
 );
 go
