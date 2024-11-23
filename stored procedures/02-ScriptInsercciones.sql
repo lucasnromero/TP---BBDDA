@@ -141,7 +141,7 @@ begin
 	set @cuit = sucursal.CalcularCUIT(@NuevoID);
 	--Agregamos en la sucursal el cuit luego de calcularlo
 	update sucursales.Sucursal
-	set cuit = 
+	set cuit = @cuit
 	where id = @NuevoID;
 	--Mostramos por pantalla el id de la nueva sucursal
     print 'Sucursal insertada correctamente con ID: ' + cast(@NuevoID as varchar(4));
@@ -174,7 +174,7 @@ create or alter procedure sucursales.InsertarTurno
 as
 begin
 	--Corroboramos si ya existe el turno
-	if exists (select 1 from sucursales.TipoDeCargo where tipo = @tipo)
+	if exists (select 1 from sucursales.TipoDeCargo where tipo = @turno)
 	begin
 		print 'Ya existe un turno con esa descripcion'
 		return;
@@ -244,17 +244,17 @@ go
 
 --Creamos el store procedure para insertar empleados
 create or alter procedure  sucursales.InsertarEmpleado
-    @legajo int
+    @legajo int,
 	@id_genero int,
     @nombre varchar(50),
     @apellido varchar(50),
-    @dni int
+    @dni int,
     @direccion varchar(100),
 	@email_personal varchar(75),
 	@email_empresa varchar(75),
 	@id_cargo int,
 	@id_sucursal int,
-	@id_turno int,
+	@id_turno int
 as
 begin
     --Verificamos si existe el empleado que intentamos ingresar, lo validamos atraves del legajo
@@ -268,9 +268,9 @@ begin
     --Calculamos el cuil
     set @cuil = sucursales.CalcularCUIL(@dni, @id_genero)
     --Insertamos el nuevo empleado
-    insert into sucursales.Empleado (legajo, id_genero, nombre, apellido, dni, direccion
+    insert into sucursales.Empleado (legajo, id_genero, nombre, apellido, dni, direccion,
 		email_personal, email_empresa, cuil, id_cargo, id_sucursal, id_turno)
-    values (@legajo, @id_genero, @nombre, @apellido, @dni, @direccion, @email_personal, @email_empresa
+    values (@legajo, @id_genero, @nombre, @apellido, @dni, @direccion, @email_personal, @email_empresa,
 	@cuil, @id_cargo, @id_sucursal, @id_turno);
     --Mostramos por pantalla el id del nuevo empleado
     declare @NuevoID int = scope_identity();
@@ -314,8 +314,8 @@ begin
 		return;
 	end
 	--Buscamos el monto de la factura
-	declare @monto decimal(10,2)
-	set @monto = (select total_iva from ventas.Factura where id_factura = @id_factura)
+	declare @monto decimal(10,2);
+	set @monto = (select total_iva from ventas.Factura where id = @id_factura)
 	--Insertamos el pago
 	insert into ventas.Pago (id_factura, identificador, monto, id_medio)
 	values (@id_factura, @identificador, @monto, @id_medio);
@@ -350,10 +350,28 @@ end;
 go
 
 --Creamos el tipo de dato para los productos
-create or alter type ventas.venta_producto_type as table(
-    id_producto int,
-    cantidad int
-);
+if not exists (select * from sys.types where name = 'venta_producto_type' and schema_id = schema_id('ventas'))
+begin
+	create type ventas.venta_producto_type as table(
+		id_producto int,
+		cantidad int
+	);
+end;
+go
+
+--Creamos el trigger para insertar el codigo por defecto
+create or alter trigger ventas.SetearCodigoPorDefecto
+on ventas.Factura
+after insert
+as
+begin
+    --Actualizamos el codigo con el valor del id si no se especifico en la inserccion
+    update ventas.Factura
+    set codigo = cast(ventas.Factura.id as varchar(50))
+    from ventas.Factura
+    inner join inserted on ventas.Factura.id = inserted.id
+    where inserted.Codigo is null;
+end;
 go
 
 --Creamos el store procedure para insertar la venta completa
@@ -361,8 +379,9 @@ create or alter procedure ventas.InsertarVentaCompleta
     @id_cliente int,
     @id_empleado int,
     @id_sucursal int,
-	@id_tipo_factura int,
-    @productos venta_producto_type --Tipo de tabla para los productos(con id_producto y cantidad)
+	@id_tipo_de_factura int,
+    @productos ventas.venta_producto_type readonly, --Tipo de tabla para los productos(con id_producto y cantidad)
+	@codigo varchar(50)
 as
 begin
     --Variables para almacenar datos intermedios
@@ -385,7 +404,7 @@ begin
     while @@fetch_status = 0
     begin
         --Obtenemos el precio unitario del producto desde la tabla de productos
-        select @precio_unitario = precio_unitario from productos.Producto where id = @id_producto;
+        set @precio_unitario = (select precio from productos.Producto where id = @id_producto)
         --Calculamos el subtotal para este producto
         set @subtotal = @cantidad * @precio_unitario;
         --Insertamos el detalle de la venta
@@ -404,12 +423,72 @@ begin
     set total = @total, cantidad_de_productos = @cantidad_de_productos
     where id = @id_venta;
 	--Obtenemos el cuit de la sucursal
-	set @cuit = select cuit from sucursales.Sucursal where id = @id_sucursal;
+	set @cuit = (select cuit from sucursales.Sucursal where id = @id_sucursal)
     --Insertamos la factura relacionada con la venta
-    insert into ventas.Factura (id_venta, id_tipo_de_factura, total_iva, cuit)
-    values (@id_venta, @id_tipo_de_factura, @total * 1.21,@cuit);
+    insert into ventas.Factura (codigo, id_venta, id_tipo_de_factura, total_iva, cuit)
+    values (@codigo, @id_venta, @id_tipo_de_factura, @total * 1.21,@cuit);
 
     --Mostramos el id de la venta que insertamos
     select @id_venta as id_venta;
+end;
+go
+
+--Creamos los store procedures de inserccion para el esquema de productos
+
+--Creamos el store procedure para insertar la linea de producto
+create or alter procedure productos.InsertarLineaDeProducto
+	@nombre varchar(50)
+as
+begin
+	--Corroboramos si ya existe la linea de producto
+	if exists(select 1 from productos.LineaDeProducto where nombre = @nombre)
+	begin
+		print 'Ya existe una linea de producto con este nombre.'
+		return;
+	end
+	--Insertamos la linea de producto
+	insert into productos.LineaDeProducto(nombre)
+	values(@nombre);
+	--Mostramos por pantalla el id del nuevo medio de pago
+    declare @NuevoID int = scope_identity();
+    print 'Linea de producto insertado correctamente con ID: ' + cast(@NuevoID as varchar(4));
+
+
+end;
+go
+
+--Creamos el trigger para insetar el precio de referencia por defecto
+create or alter trigger productos.SetearPrecioPorDefecto
+on productos.Producto
+after insert
+as
+begin
+    --Actualizamos el campo precio_referencia con el valor del precio si no se especifico en la inserción
+    update productos.Producto
+    set precio_referencia = productos.Producto.precio
+    from productos.Producto
+    inner join Inserted on productos.Producto.id = Inserted.id
+    where Inserted.precio_referencia is null;
+end;
+go
+
+--Creamos el store procedure para insertar un producto
+create or alter procedure productos.InsertarProducto
+	@id_linea_de_producto int,
+	@categoria varchar(100),
+	@nombre varchar(100),
+	@precio decimal(10,2),
+	@precio_referencia decimal(10,2),
+	@unidad_referencia varchar(50),
+	@fecha smalldatetime
+as
+begin
+	--Insertamos el producto
+	insert into productos.Producto(id_linea_de_producto,categoria,nombre,precio,precio_referencia,unidad_referencia,fecha)
+	values(@id_linea_de_producto,@categoria,@nombre,@precio,@precio_referencia,@unidad_referencia,@fecha);
+	--Mostramos por pantalla el id del nuevo medio de pago
+    declare @NuevoID int = scope_identity();
+    print 'Prodcuto insertado correctamente con ID: ' + cast(@NuevoID as varchar(4));
+
 end;
 go
