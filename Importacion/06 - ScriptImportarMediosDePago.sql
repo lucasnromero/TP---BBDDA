@@ -20,7 +20,7 @@ begin
             [F1] tipo
         from openrowset(
             ''microsoft.ace.oledb.12.0'',
-            ''excel 12.0; hdr=yes; database=' + 'C:\Users\Lucas\Desktop\TP BBDDA\TP_integrador_Archivos\TP_integrador_Archivos\Informacion_complementaria.xlsx' + ''',
+            ''excel 12.0; hdr=yes; database=' + @rutaxlsx + ''',
             ''select * from [medios de pago$B2:B100]''
         )';
 
