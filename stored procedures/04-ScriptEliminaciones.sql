@@ -110,7 +110,7 @@ end;
 go
 
 --Creamos el store procedure para eliminar los turnos
-create or alter procedure sucursales.Turno
+create or alter procedure sucursales.EliminarTurno
 	@id int
 as
 begin
@@ -139,7 +139,7 @@ begin
     end
     --Marcamos como eliminado el empleado
     update sucursales.Empleado set eliminado = 1 where legajo = @legajo;
-    print 'Empleado marcado como eliminado correctamente con el ID: ' + cast(@id as varchar(4));
+    print 'Empleado marcado como eliminado correctamente con el Legajo: ' + cast(@legajo as varchar(4));
 end;
 go
 
@@ -237,7 +237,7 @@ begin
 	end
 	--Eliminamos la linea de producto
 	delete from productos.LineaDeProducto where id = @id
-	print 'Linea de producto eliminada correctamente con ID: ' + cast(@id as vaarchar(4));
+	print 'Linea de producto eliminada correctamente con ID: ' + cast(@id as varchar(4));
 end;
 go
 
