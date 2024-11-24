@@ -1,4 +1,4 @@
---Fecha de entrega: 05/11
+--Fecha de entrega: 26/11
 --Número de grupo: 05
 --Materia: BASES DE DATOS APLICADAS
 --Alumnos:
@@ -76,9 +76,9 @@ go
 --Creamos la tabla para los clientes del esquema clientes
 create table clientes.Cliente (
     id int identity(1,1) primary key,
-    id_tipo_de_cliente int not null,
-    id_ciudad int not null,
-    id_genero int not null,
+    id_tipo_de_cliente int,
+    id_ciudad int,
+    id_genero int,
     nombre varchar(50),
     apellido varchar(50),
     dni int,
@@ -128,9 +128,9 @@ create table sucursales.Empleado (
 	email_personal varchar(75) not null,
 	email_empresa varchar(75) not null,
     cuil varchar(15) unique,
-	id_cargo int not null,
-	id_sucursal int not null,
-	id_turno int not null,
+	id_cargo int,
+	id_sucursal int,
+	id_turno int,
     eliminado bit not null default(0),
     constraint fk_genero_empleado foreign key (id_genero) references clientes.Genero(id) on delete set null,
     constraint fk_sucursal foreign key (id_sucursal) references sucursales.Sucursal(id) on delete set null,
@@ -149,9 +149,9 @@ go
 --Creamos la tabla para las ventas del esquema ventas
 create table ventas.Venta (
     id int identity(1,1) primary key,
-    id_cliente int not null,
-    legajo_empleado int not null,
-    id_sucursal int not null,
+    id_cliente int,
+    legajo_empleado int,
+    id_sucursal int,
     total decimal(10,2) check (total >=0),
 	cantidad_de_productos int check (cantidad_de_productos >= 0),
     fecha date default (cast(getdate() as date)),
@@ -217,7 +217,7 @@ go
 --Creamos la tabla para los productos del esquema productos
 create table productos.Producto (
     id int identity(1,1) primary key,
-    id_linea_de_producto int not null,
+    id_linea_de_producto int,
     categoria varchar(100),
 	nombre varchar(100) not null,
 	precio decimal(10,2) not null,
@@ -232,11 +232,11 @@ go
 create table ventas.DetalleDeVenta (
     id int identity(1,1) primary key,
     id_venta int not null,
-	id_producto int not null,
+	id_producto int,
 	cantidad int check(cantidad >=1),
 	precio_unitario decimal(10,2),
 	subtotal decimal(10,2),
 	constraint fk_venta_detalle foreign key (id_venta) references ventas.Venta(id),
-	constraint fk_producto_detalle foreign key (id_producto) references productos.Producto(id)
+	constraint fk_producto_detalle foreign key (id_producto) references productos.Producto(id) on delete set null
 );
 go
