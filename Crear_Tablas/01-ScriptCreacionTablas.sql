@@ -191,7 +191,7 @@ create table ventas.Pago (
 	id_medio int,
 	monto decimal(10,2),
 	fecha smalldatetime default(cast(getdate()as smalldatetime)),
-	constraint fk_medio_pago foreign key (id_medio) references ventas.MedioDePago(id),
+	constraint fk_medio_pago foreign key (id_medio) references ventas.MedioDePago(id) on delete set null,
 	constraint fk_factura_pago foreign key (id_factura) references ventas.Factura(id)
 );
 go
