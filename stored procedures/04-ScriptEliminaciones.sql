@@ -134,7 +134,7 @@ begin
     --Verificamos si el empleado existe
     if not exists(select 1 from sucursales.Empleado where legajo = @legajo and eliminado = 0)
     begin
-        print 'No se encontró el empleado con el ID especificado o ya está eliminado.';
+        print 'No se encontró el empleado con el Legajo especificado o ya está eliminado.';
         return;
     end
     --Marcamos como eliminado el empleado
@@ -143,4 +143,41 @@ begin
 end;
 go
 
+--Creamos los store procedure de eliminacion del esquema de ventas
+
+--Creamos el store procedure para elminar los medios de pago
+create or alter procedure ventas.EliminarMedioDePago
+	@id int
+as
+begin
+	--Verificamos si el medio de pago existe
+	if not exists (select 1 from ventas.MedioDePago where id = @id)
+	begin 
+		print 'No se encontró el medio de pago con el ID especificado.'
+		return;
+	end
+	--Eliminamos el medio de pago
+	delete from ventas.MedioDePago where id = @id
+	print 'Medio de pago eliminado correctamente con ID: ' + cast(@id as varchar(4));
+end;
+go
+
+--Creamos el store procedue para eliminar los tipos de factura
+create or alter procedure ventas.EliminarTipoDeFactura
+	@id int
+as
+begin
+	--Verificamos si el tipo de factura existe
+	if not exists (select 1 from ventas.TipoDeFactura where id = @id)
+	begin
+		print 'No se encontro el tipo de factura con el ID especificado.'
+		return;
+	end
+	--Eliminamos el tipo de factura
+	delete from ventas.TipoDeFactura where id = @id
+	print 'Tipo de factura eliminado correctamente con ID: ' + cast(@id as varchar(4));
+end;
+go
+
+--Creamos el store procedure para eliminar una venta completa
 
