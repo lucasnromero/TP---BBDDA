@@ -85,9 +85,9 @@ create table clientes.Cliente (
     fecha_nacimiento date,
     direccion varchar(60),
     eliminado bit not null default(0),
-    constraint fk_tipo_cliente foreign key (id_tipo_de_cliente) references clientes.TipoDeCliente(id),
-    constraint fk_ciudad foreign key (id_ciudad) references clientes.Ciudad(id),
-    constraint fk_genero_cliente foreign key (id_genero) references clientes.Genero(id)
+    constraint fk_tipo_cliente foreign key (id_tipo_de_cliente) references clientes.TipoDeCliente(id) on delete set null,
+    constraint fk_ciudad foreign key (id_ciudad) references clientes.Ciudad(id) on delete set null,
+    constraint fk_genero_cliente foreign key (id_genero) references clientes.Genero(id) on delete set null
 );
 go
 
@@ -132,10 +132,10 @@ create table sucursales.Empleado (
 	id_sucursal int not null,
 	id_turno int not null,
     eliminado bit not null default(0),
-    constraint fk_genero_empleado foreign key (id_genero) references clientes.Genero(id),
-    constraint fk_sucursal foreign key (id_sucursal) references sucursales.Sucursal(id),
-	constraint fk_cargo foreign key (id_cargo) references sucursales.TipoDeCargo(id),
-	constraint fk_turno foreign key (id_turno) references sucursales.Turno
+    constraint fk_genero_empleado foreign key (id_genero) references clientes.Genero(id) on delete set null,
+    constraint fk_sucursal foreign key (id_sucursal) references sucursales.Sucursal(id) on delete set null,
+	constraint fk_cargo foreign key (id_cargo) references sucursales.TipoDeCargo(id) on delete set null,
+	constraint fk_turno foreign key (id_turno) references sucursales.Turno on delete set null
 );
 go
 
@@ -156,9 +156,9 @@ create table ventas.Venta (
 	cantidad_de_productos int check (cantidad_de_productos >= 0),
     fecha date default (cast(getdate() as date)),
     hora time(0) default (cast(getdate() as time)),
-    constraint fk_cliente foreign key (id_cliente) references clientes.Cliente(id),
-    constraint fk_empleado foreign key (legajo_empleado) references sucursales.Empleado(legajo),
-    constraint fk_sucursal_venta foreign key (id_sucursal) references sucursales.Sucursal(id),    
+    constraint fk_cliente foreign key (id_cliente) references clientes.Cliente(id) on delete set null,
+    constraint fk_empleado foreign key (legajo_empleado) references sucursales.Empleado(legajo) on delete set null,
+    constraint fk_sucursal_venta foreign key (id_sucursal) references sucursales.Sucursal(id) on delete set null,    
 );
 go
 
