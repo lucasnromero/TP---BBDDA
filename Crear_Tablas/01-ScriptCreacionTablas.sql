@@ -179,7 +179,7 @@ create table ventas.Factura (
 	cuit varchar(20),
 	estado varchar(30) check(estado in ('Pagada','Pendiente')) default('Pendiente'),
     constraint fk_venta_factura foreign key (id_venta) references ventas.Venta(id),
-    constraint fk_tipo_de_factura foreign key (id_tipo_de_factura) references ventas.TipoDeFactura(id)
+    constraint fk_tipo_de_factura foreign key (id_tipo_de_factura) references ventas.TipoDeFactura(id) on delete set null
 );
 go
 
@@ -224,7 +224,7 @@ create table productos.Producto (
 	precio_referencia decimal(10,2),
 	unidad_referencia varchar(50),
 	fecha smalldatetime,
-    constraint fk_linea_de_producto foreign key (id_linea_de_producto) references productos.LineaDeProducto(id)
+    constraint fk_linea_de_producto foreign key (id_linea_de_producto) references productos.LineaDeProducto(id) on delete set null
 );
 go
 
