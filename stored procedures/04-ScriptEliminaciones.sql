@@ -62,9 +62,9 @@ create or alter procedure clientes.EliminarCliente
 as
 begin
     --Verificamos si el cliente existe
-    if not exists(select 1 from clientes.Cliente where id = @id)
+    if not exists(select 1 from clientes.Cliente where id = @id and eliminado = 0)
     begin
-        print 'No se encontró el cliente con el ID especificado.';
+        print 'No se encontró el cliente con el ID especificado o ya esta eliminado.';
         return;
     end
     --Marcamos como eliminado el cliente
@@ -139,7 +139,7 @@ begin
     end
     --Marcamos como eliminado el empleado
     update sucursales.Empleado set eliminado = 1 where legajo = @legajo;
-    print 'Empleado marcado como eliminado correctamente con el Legajo: ' + cast(@legajo as varchar(4));
+    print 'Empleado marcado como eliminado correctamente con el Legajo: ' + cast(@legajo as varchar(20));
 end;
 go
 
@@ -194,15 +194,15 @@ begin
 	declare @id_venta int
 	set @id_venta = (select id_venta from ventas.Factura where id = @id_factura)
 	--Eliminamos la venta y los detalles y la factura
+	delete from ventas.Factura where id = @id_factura
 	delete from ventas.DetalleDeVenta where id_venta = @id_venta
 	delete from ventas.Venta where id = @id_venta
-	delete from ventas.Factura where id = @id_factura
 	print 'Venta eliminada de forma completa. Factura con ID: ' + cast(@id_factura as varchar(4)) + ' y Venta junto a su Detalle con ID : ' + cast(@id_venta as varchar(4));
 end;
 go
 
 --Creamos el store procedure para eliminar un pago
-create or alter procedure ventas.EliminarPAgo
+create or alter procedure ventas.EliminarPago
 	@id int
 as
 begin
@@ -225,7 +225,7 @@ go
 --Creamos los store procedure de eliminacion del esquema de productos
 
 --Creamos el store procedure para elimanar la linea de producto
-create or alter procedure productos.EliminarLineaDEProducto
+create or alter procedure productos.EliminarLineaDeProducto
 	@id int
 as
 begin
