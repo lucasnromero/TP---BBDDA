@@ -32,9 +32,8 @@ begin
 		from openrowset(
 			''microsoft.ace.oledb.12.0'',
 			''excel 12.0;database=' + @rutaxlsx + ';hdr=yes;'',
-			''select [Línea de producto], [Producto] from [Clasificacion productos$]''
-		);
-	';
+			''select [Línea de producto], [Producto] from [Clasificacion productos$]'');
+		';
 	--Ejecutamos la consulta dinámica
 	exec sp_executesql @sql;
     --Insertamos las líneas de producto en la tabla de LineaDeProducto
@@ -136,7 +135,7 @@ begin
         from openrowset(
             ''microsoft.ace.oledb.12.0'',
             ''excel 12.0; database=' +  @rutaxlsx + ''',
-            ''select * from [Empleados$A1:K17]'')
+            ''select * from [Empleados$A1:K17]'');
 		';
 	--Ejecutamos la consulta dinámica
     exec sp_executesql @sql;
@@ -204,8 +203,8 @@ begin
         from openrowset(
             ''microsoft.ace.oledb.12.0'',
             ''excel 12.0; hdr=yes; database=' + @rutaxlsx + ''',
-            ''select * from [medios de pago$B2:B100]''
-        )';
+            ''select * from [medios de pago$B2:B100]'');
+		';
 	--Ejecutamos la consulta dinámica
     exec sp_executesql @sql;
     --Insertamos los registros válidos en la tabla de MedioDePago
@@ -218,6 +217,52 @@ end;
 go
 --Ejecutamos el procedimiento con el archivo especificado
 exec ventas.ImportarMedioDePago @rutaxlsx = 'C:\Users\lucia\Desktop\Bases\TP_integrador_Archivos\Informacion_complementaria.xlsx';
+go
+
+--Creamos el store procedure para importar los accesorios electronicos
+create or alter procedure productos.ImportarAccesoriosElectronicos
+    @rutaxlsx nvarchar(max),
+	@tipodecambio decimal(10,2)
+as
+begin
+	--Creamos tabla temporal para almacenar los datos del Excel
+    create table #ProductosTemp(
+		nombre varchar(100),
+		precio_unitario_dolares decimal(10,2)
+    );
+	declare @sql nvarchar(max);
+	--Preparamos la consulta dinámica para leer el Excel usando OPENROWSET
+    set @sql = '
+        insert into #ProductosTemp(nombre, precio_unitario_dolares)
+        select [Product] as nombre, [Precio Unitario en dolares] as precio_unitario_dolares
+        from openrowset(
+            ''microsoft.ace.oledb.12.0'',
+            ''excel 12.0; database=' + @rutaxlsx + ''',
+            ''select * from [sheet1$]'');
+		';
+	--Ejecutamos la consulta dinámica
+    exec sp_executesql @sql;
+	--Insertamos la nueva linea que viene de estos productos que estamos importando
+	insert into productos.LineaDeProducto(linea,categoria)
+	select 'Electronic Accessories','Electrodomesticos'
+	where not exists (select 1 from productos.LineaDeProducto as p
+    where p.linea = 'Electronic Accessories' and p.categoria = 'Electrodomesticos');
+	--Insertamos los registros desde la tabla temporal a la de Productos sin duplicados
+    insert into productos.Producto(id_linea_de_producto,nombre,precio,unidad_referencia)
+    select 
+        (select id from productos.LineaDeProducto where linea = 'Electronic Accessories'), 
+		t.nombre,
+        t.precio_unitario_dolares * @tipodecambio,  --Convertimos el precio de dólares a pesos
+		'ud'
+	from #ProductosTemp as t 
+	where not exists (select 1 from productos.Producto as p
+    where p.nombre = t.nombre);
+	--Eliminamos la tabla temporal
+    drop table if exists productos.#ProductosTemp;
+end;
+go
+--Ejecutamos el procedimiento con el archivo especificado
+exec productos.ImportarAccesoriosElectronicos @rutaxlsx = 'C:\Users\lucia\Desktop\Bases\TP_integrador_Archivos\Productos\Electronic accessories.xlsx', @tipodecambio = 1200
 go
 
 
