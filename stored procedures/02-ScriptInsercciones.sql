@@ -436,18 +436,19 @@ go
 
 --Creamos el store procedure para insertar la linea de producto
 create or alter procedure productos.InsertarLineaDeProducto
-	@nombre varchar(50)
+	@linea varchar(50),
+	@categoria varchar(50)
 as
 begin
 	--Corroboramos si ya existe la linea de producto
-	if exists(select 1 from productos.LineaDeProducto where nombre = @nombre)
+	if exists(select 1 from productos.LineaDeProducto where linea = @linea and categoria = @categoria)
 	begin
-		print 'Ya existe una linea de producto con este nombre.'
+		print 'Ya existe una linea de producto con esa categoria.'
 		return;
 	end
 	--Insertamos la linea de producto
-	insert into productos.LineaDeProducto(nombre)
-	values(@nombre);
+	insert into productos.LineaDeProducto(linea,categoria)
+	values(@linea,@categoria);
 	--Mostramos por pantalla el id del nuevo medio de pago
     declare @NuevoID int = scope_identity();
     print 'Linea de producto insertado correctamente con ID: ' + cast(@NuevoID as varchar(4));
@@ -489,7 +490,6 @@ go
 --Creamos el store procedure para insertar un producto
 create or alter procedure productos.InsertarProducto
 	@id_linea_de_producto int,
-	@categoria varchar(100),
 	@nombre varchar(100),
 	@precio decimal(10,2),
 	@precio_referencia decimal(10,2) = null,
@@ -498,8 +498,8 @@ create or alter procedure productos.InsertarProducto
 as
 begin
 	--Insertamos el producto
-	insert into productos.Producto(id_linea_de_producto,categoria,nombre,precio,precio_referencia,unidad_referencia,fecha)
-	values(@id_linea_de_producto,@categoria,@nombre,@precio,@precio_referencia,@unidad_referencia,@fecha);
+	insert into productos.Producto(id_linea_de_producto,nombre,precio,precio_referencia,unidad_referencia,fecha)
+	values(@id_linea_de_producto,@nombre,@precio,@precio_referencia,@unidad_referencia,@fecha);
 	--Mostramos por pantalla el id del nuevo medio de pago
     declare @NuevoID int = scope_identity();
     print 'Prodcuto insertado correctamente con ID: ' + cast(@NuevoID as varchar(4));
