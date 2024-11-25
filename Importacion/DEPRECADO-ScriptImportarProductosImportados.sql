@@ -1,3 +1,5 @@
+--DEPRECADO
+
 use g05com2900;
 go
 
