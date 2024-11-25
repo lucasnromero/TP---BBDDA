@@ -358,3 +358,4 @@ go
 exec productos.ImportarCatalogo @rutacsv = 'C:\Users\lucia\Desktop\Bases\TP_integrador_Archivos\Productos\catalogo.csv'; 
 go
 
+
