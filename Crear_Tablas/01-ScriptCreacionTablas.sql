@@ -210,7 +210,8 @@ go
 --Creamos la tabla para las lineas de producto del esquema productos
 create table productos.LineaDeProducto (
     id int identity(1,1) primary key,
-    nombre varchar(50) not null unique
+    linea varchar(100) not null,
+	categoria varchar(100)
 );
 go
 
@@ -218,7 +219,6 @@ go
 create table productos.Producto (
     id int identity(1,1) primary key,
     id_linea_de_producto int,
-    categoria varchar(100),
 	nombre varchar(100) not null,
 	precio decimal(10,2) not null,
 	precio_referencia decimal(10,2),
