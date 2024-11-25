@@ -394,20 +394,39 @@ begin
         from ''' + @rutacsv + '''
         with (
             format = ''csv'',
-            fieldterminator = '';'', -- Utilizar tabulación como separador
-            rowterminator = ''0x0a'', -- Salto de línea
-            firstrow = 2, -- Ignorar encabezado
-            codepage = ''65001'' -- Soporte para UTF-8);
+            fieldterminator = '';'',
+            rowterminator = ''0x0a'',
+            firstrow = 2,
+            codepage = ''65001'');
 	  ';
     --Ejecutamos la consulta dinámica
 	exec sp_executesql @sql;
+	--Insertamos los datos de las tablas secundarias
+	--Tabla de generos
+	insert into clientes.Genero(tipo)
+	select distinct t.genero
+	from #VentasTemp as t
+	where not exists (select 1 from clientes.Genero as g
+	where g.tipo = t.genero);
+	--Tabla de tipo de cliente
+	insert into clientes.TipoDeCliente(tipo)
+	select distinct t.tipo_cliente
+	from #VentasTemp as t
+	where not exists (select 1 from clientes.TipoDeCliente as c
+	where c.tipo = t.tipo_cliente);
+	--Tabla de tipo de factura
+	insert into ventas.TipoDeFactura(tipo)
+	select distinct t.tipo_factura
+	from #VentasTemp as t
+	where not exists (select 1 from ventas.TipoDeFactura as v
+	where v.tipo = t.tipo_factura);
 	--Declaramos las variables para almacenar los IDs generados
     declare @id_venta int, @id_factura int,@id_tipo_de_factura int, @id_producto int, @id_medio int, 
 			@id_ciudad int, @id_tipo_de_cliente int, @id_genero int, @id_sucursal int, @id_cliente int,
 			@cuit varchar(20);
 	--Declaramos las variables de los campos de la tabla temporal
 	declare @codigo varchar(50), @tipo_factura varchar(50), @ciudad varchar(100), @tipo_cliente varchar(50), @genero varchar(20), @producto varchar(100), 
-        @precio_unitario int, @cantidad int, @fecha date, @hora time, @medio_pago varchar(50), @empleado int, @identificador_pago varchar(50);
+        @precio_unitario decimal(10,2), @cantidad int, @fecha date, @hora time, @medio_pago varchar(50), @empleado int, @identificador_pago varchar(50);
     --Declaramos un cursor para analizar venta por venta
     declare cursor_ventas cursor for
     select 
@@ -423,40 +442,20 @@ begin
     begin
         --Obtenemos el id de la ciudad
         select @id_ciudad = id from clientes.Ciudad where reemplazo = @ciudad;
-        --Obtenemos el id del tipo de cliente o insertamos si no lo encuentra
+        --Obtenemos el id del tipo de cliente 
         select @id_tipo_de_cliente = id from clientes.TipoDeCliente where tipo = @tipo_cliente;
-        if @id_tipo_de_cliente is null
-        begin
-            insert into clientes.TipoDeCliente (tipo) values (@tipo_cliente);
-            set @id_tipo_de_cliente = scope_identity();
-        end;
-		--Obtenemos el id del genero o insertamos si no lo encuentra
+		--Obtenemos el id del genero
         select @id_genero = id from clientes.Genero where tipo = @genero;
-        if @id_genero is null
-        begin
-            insert into clientes.Genero (tipo) values (@genero);
-            set @id_genero = scope_identity();
-        end;
 		--Insertamos el cliente nuevo con sus campos de genero, ciudad y tipo de cliente. Y obtenemos su id
 		insert into clientes.Cliente(id_tipo_de_cliente,id_genero,id_ciudad)
 		values(@id_tipo_de_cliente,@id_genero,@id_ciudad);
 		set @id_cliente = scope_identity();
-		--Obtenemos el id del medio de pago o insertamos si no lo encuentra
+		--Obtenemos el id del medio de pago 
         select @id_medio = id from ventas.MedioDePago where tipo = @medio_pago;
-        if @id_medio is null
-        begin
-            insert into ventas.MedioDePago (tipo) values (@medio_pago);
-            set @id_medio = scope_identity();
-        end;
 		--Obtenemos el id del producto
         select @id_producto = id from productos.Producto where nombre = @producto;
-		--Obtenemos el id del tipo de factura o insertamos si no lo encuentra
+		--Obtenemos el id del tipo de factura 
 		select @id_tipo_de_factura = id from ventas.TipoDeFactura where tipo = @tipo_factura;
-		if @id_tipo_de_factura is null
-		begin
-			insert into ventas.TipoDeFactura(tipo) values(@tipo_factura);
-			set @id_tipo_de_factura = scope_identity();
-		end;
 		--Obtenemos el cuit de la sucursal
 		select @cuit = s.cuit from sucursales.Sucursal as s inner join sucursales.Empleado as e on e.id_sucursal = s.id where e.legajo = @empleado;
         --Insertamos la venta
@@ -467,8 +466,8 @@ begin
         insert into ventas.DetalleDeVenta (id_venta, id_producto, cantidad, precio_unitario, subtotal)
         values (@id_venta, @id_producto, @cantidad, @precio_unitario, @precio_unitario * @cantidad);
         --Insertamos la factura
-        insert into ventas.Factura (id_venta, id_tipo_de_factura, total_iva, cuit, estado)
-        values (@id_venta,@id_tipo_de_factura,@precio_unitario * @cantidad * 1.21 , @cuit, 'Pagada');
+        insert into ventas.Factura (codigo,id_venta, id_tipo_de_factura, total_iva, cuit, estado)
+        values (@codigo, @id_venta, @id_tipo_de_factura,@precio_unitario * @cantidad * 1.21 , @cuit, 'Pagada');
         set @id_factura = scope_identity();
         --Insertamos el pago
         insert into ventas.Pago (id_factura, identificador, id_medio, monto, fecha)
@@ -485,4 +484,6 @@ begin
     drop table if exists #VentasTemp;
 end;
 go
-
+--Ejecutamos el procedimiento con el archivo y tipo de cambio especificados
+exec ventas.ImportarVentas @rutacsv = 'C:\Users\lucia\Desktop\Bases\TP_integrador_Archivos\Ventas_registradas.csv'; 
+go
