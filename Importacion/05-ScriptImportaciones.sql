@@ -13,6 +13,8 @@ EXEC sp_MSset_oledb_prop N'Microsoft.ACE.OLEDB.16.0', N'AllowInProcess', 1;
 go
 EXEC sp_MSset_oledb_prop N'Microsoft.ACE.OLEDB.16.0', N'DynamicParameters', 1;
 go
+set nocount on;
+go
 
 --Creamos el store procedure para importar las lineas de producto
 create or alter procedure productos.ImportarLineaDeProducto
