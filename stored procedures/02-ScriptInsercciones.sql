@@ -119,21 +119,21 @@ go
 
 --Creamos el store procedure para insertar sucursales
 create or alter procedure sucursales.InsertarSucursal
-    @ciudad varchar(60),
+    @id_ciudad varchar(60),
     @direccion varchar(100),
 	@horario varchar(100),
 	@telefono varchar(20)
 as
 begin
     --Corroboramos si ya existe una sucursal con la misma ciudad y localidad
-    if exists (select 1 from sucursales.Sucursal where direccion = @direccion and ciudad = @ciudad)
+    if exists (select 1 from sucursales.Sucursal where direccion = @direccion and id_ciudad = @id_ciudad)
     begin
         print 'Ya existe una sucursal con esa direccion en esa ciudad.'
         return;
     end
     --Insertamos la nueva sucursal
-    insert into sucursales.Sucursal (ciudad, direccion, horario, telefono)
-    values (@ciudad, @direccion, @horario, @telefono);
+    insert into sucursales.Sucursal (id_ciudad, direccion, horario, telefono)
+    values (@id_ciudad, @direccion, @horario, @telefono);
     --Declaramos el id de la sucursal que acabamos de insertar
     declare @NuevoID int = scope_identity();
 	--Calculamos el cuit de la sucursal
@@ -377,7 +377,6 @@ go
 create or alter procedure ventas.InsertarVentaCompleta
     @id_cliente int,
     @legajo_empleado int,
-    @id_sucursal int,
 	@id_tipo_de_factura int,
     @productos ventas.venta_producto_type readonly, --Tipo de tabla para los productos(con id_producto y cantidad)
 	@codigo varchar(50)= null
@@ -391,8 +390,8 @@ begin
     declare @subtotal decimal(10, 2);
 	declare @cuit varchar(20);
     --Insertamos la venta y obtenemos su id respectivo
-    insert into ventas.Venta(id_cliente, legajo_empleado, id_sucursal, total, cantidad_de_productos)
-    values (@id_cliente, @legajo_empleado, @id_sucursal, @total, @cantidad_de_productos);
+    insert into ventas.Venta(id_cliente, legajo_empleado, total, cantidad_de_productos)
+    values (@id_cliente, @legajo_empleado, @total, @cantidad_de_productos);
 	set @id_venta = scope_identity();
     --Iteramos sobre los productos de la venta
     declare @id_producto int, @cantidad int;
@@ -422,7 +421,7 @@ begin
     set total = @total, cantidad_de_productos = @cantidad_de_productos
     where id = @id_venta;
 	--Obtenemos el cuit de la sucursal
-	set @cuit = (select cuit from sucursales.Sucursal where id = @id_sucursal)
+	set @cuit = (select s.cuit from sucursales.Sucursal as s inner join sucursales.Empleado as e on e.id_sucursal = s.id where e.legajo = @legajo_empleado)
     --Insertamos la factura relacionada con la venta
     insert into ventas.Factura (codigo, id_venta, id_tipo_de_factura, total_iva, cuit)
     values (@codigo, @id_venta, @id_tipo_de_factura, @total * 1.21,@cuit);
