@@ -178,7 +178,7 @@ begin
     where not exists (select 1 from sucursales.Empleado as e
     where e.legajo = t.legajo);
     --Eliminamos la tabla temporal
-    drop table if exists sucursales.#empleado_temp;   
+    drop table if exists #EmpleadoTemp;   
 end;
 go
 --Ejecutamos el procedimiento con el archivo especificado
@@ -212,7 +212,7 @@ begin
     select tipo
     from #MedioDePagoTemp
     --Eliminamos la tabla temporal
-    drop table if exists ventas.#medio_pago_temp;
+    drop table if exists #MedioDePagoTemp;
 end;
 go
 --Ejecutamos el procedimiento con el archivo especificado
@@ -258,11 +258,63 @@ begin
 	where not exists (select 1 from productos.Producto as p
     where p.nombre = t.nombre);
 	--Eliminamos la tabla temporal
-    drop table if exists productos.#ProductosTemp;
+    drop table if exists #ProductosTemp;
 end;
 go
 --Ejecutamos el procedimiento con el archivo especificado
 exec productos.ImportarAccesoriosElectronicos @rutaxlsx = 'C:\Users\lucia\Desktop\Bases\TP_integrador_Archivos\Productos\Electronic accessories.xlsx', @tipodecambio = 1200
 go
+
+--Creamos el store procedure para importar los productos importados
+create or alter procedure productos.ImportarProductosImportados
+    @rutaxlsx nvarchar(max)
+as
+begin
+    --Creamos la tabla temporal para almacenar los datos del Excel
+    create table #ProductosTemp(
+        NombreProducto varchar(100),
+        Categoria varchar(100),
+        CantidadPorUnidad varchar(100),
+        PrecioUnidad decimal(10,2)
+    );
+    declare @sql nvarchar(max);
+    --Preparamos la consulta dinámica para leer el Excel usando OPENROWSET
+    set @sql = '
+        insert into #ProductosTemp(NombreProducto, Categoria, CantidadPorUnidad, PrecioUnidad)
+        select [NombreProducto], [Categoría], [CantidadPorUnidad], [PrecioUnidad]
+        from openrowset(
+            ''microsoft.ace.oledb.12.0'',
+            ''excel 12.0; database=' + @rutaxlsx + ''',
+            ''select * from [Listado de Productos$]'');
+	   ';
+    --Ejecutamos la consulta dinámica
+    exec sp_executesql @sql;
+	--Insertamos las lineas de producto que vienen de estos productos que estamos importando
+	insert into productos.LineaDeProducto(linea,categoria)
+	select distinct 'Productos Importados',t.Categoria
+	from #ProductosTemp as t
+	where not exists (select 1 from productos.LineaDeProducto as p
+    where p.linea = 'Productos Importados' and p.categoria = t.Categoria);
+    --Insertamos los registros desde la tabla temporal a la de Productos sin duplicados
+    insert into productos.Producto (id_linea_de_producto, nombre, precio, unidad_referencia)
+    select
+		(select id from productos.LineaDeProducto where linea = 'Productos Importados' and categoria = t.Categoria),
+        t.NombreProducto, 
+        t.PrecioUnidad,
+		t.CantidadPorUnidad
+    from #ProductosTemp as t
+    where not exists (
+        select 1
+        from productos.Producto as p
+        where p.nombre = t.NombreProducto
+    );
+    --Eliminamos la tabla temporal
+    drop table if exists #ProductosTemp;
+end;
+go
+--Ejecutamos el procedimiento con el archivo y tipo de cambio especificados
+exec productos.ImportarProductosImportados @rutaxlsx = 'C:\Users\lucia\Desktop\Bases\TP_integrador_Archivos\Productos\Productos_importados.xlsx'
+go
+
 
 
