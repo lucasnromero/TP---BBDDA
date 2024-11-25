@@ -10,7 +10,9 @@ sp_configure 'Ad Hoc Distributed Queries', 1;
 RECONFIGURE;
 go
 EXEC sp_MSset_oledb_prop N'Microsoft.ACE.OLEDB.16.0', N'AllowInProcess', 1;
+go
 EXEC sp_MSset_oledb_prop N'Microsoft.ACE.OLEDB.16.0', N'DynamicParameters', 1;
+go
 
 --Creamos el store procedure para importar las lineas de producto
 create or alter procedure productos.ImportarLineaDeProducto
@@ -23,19 +25,19 @@ begin
         categoria varchar(100)
     );
 	declare @sql nvarchar(max);
-	--Preparamos la consulta din�mica para leer el Excel usando OPENROWSET
+	--Preparamos la consulta dinámica para leer el Excel usando OPENROWSET
 	set @sql = '
 		insert into #LineaDeProductoTemp (linea, categoria)
-		select [L�nea de producto] as linea, [Producto] as categoria
+		select [Línea de producto] as linea, [Producto] as categoria
 		from openrowset(
 			''microsoft.ace.oledb.12.0'',
 			''excel 12.0;database=' + @rutaxlsx + ';hdr=yes;'',
-			''select [L�nea de producto], [Producto] from [Clasificacion productos$]''
+			''select [Línea de producto], [Producto] from [Clasificacion productos$]''
 		);
 	';
-	--Ejecutamos la consulta din�mica
+	--Ejecutamos la consulta dinámica
 	exec sp_executesql @sql;
-    --Insertamos las l�neas de producto en la tabla de LineaDeProducto
+    --Insertamos las líneas de producto en la tabla de LineaDeProducto
     insert into productos.LineaDeProducto(linea,categoria)
     select linea,categoria
     from #LineaDeProductoTemp
@@ -46,6 +48,7 @@ end;
 go
 --Ejecutamos el procedimiento con el archivo especificado
 exec productos.ImportarLineaDeProducto @rutaxlsx = 'C:\Users\lucia\Desktop\Bases\TP_integrador_Archivos\Informacion_complementaria.xlsx';
+go
 
 --Creamos el store procedure para importar las sucursales
 create or alter procedure sucursales.ImportarSucursal
@@ -60,7 +63,7 @@ begin
         telefono varchar(20)
     );
     declare @sql nvarchar(max);
-    --Preparamos la consulta din�mica para leer el Excel usando OPENROWSET
+    --Preparamos la consulta dinámica para leer el Excel usando OPENROWSET
     set @sql = '
         insert into #SucursalTemp(ciudad, direccion, horario, telefono)
         select [Reemplazar por], [direccion], [Horario], [Telefono]
@@ -69,7 +72,7 @@ begin
             ''excel 12.0; database=' + @rutaxlsx + ''',
             ''select * from [sucursal$]'');
 		';
-    --Ejecutamos la consulta din�mica
+    --Ejecutamos la consulta dinámica
     exec sp_executesql @sql;
 	--Creamos una tabla temporal para actualizar luego los cuits
 	 create table #NuevasSucursales (
@@ -96,6 +99,7 @@ end;
 go
 --Ejecutamos el procedimiento con el archivo especificado
 exec sucursales.ImportarSucursal @rutaxlsx = 'C:\Users\lucia\Desktop\Bases\TP_integrador_Archivos\Informacion_complementaria.xlsx';
+go
 
 --Creamos el store procedure para importar los empleados
 create or alter procedure sucursales.ImportarEmpleado
@@ -116,7 +120,7 @@ begin
         turno varchar(30)
     );
     declare @sql nvarchar(max);
-    --Preparamos la consulta din�mica para leer el Excel usando OPENROWSET
+    --Preparamos la consulta dinámica para leer el Excel usando OPENROWSET
     set @sql = '
         insert into sucursales.#EmpleadoTemp (legajo, nombre, apellido, dni, direccion, email_personal, email_empresa, cargo, sucursal, turno)
         select [legajo/id] as legajo,
@@ -134,7 +138,7 @@ begin
             ''excel 12.0; database=' +  @rutaxlsx + ''',
             ''select * from [Empleados$A1:K17]'')
 		';
-	--Ejecutamos la consulta din�mica
+	--Ejecutamos la consulta dinámica
     exec sp_executesql @sql;
 	--Insertamos los dinstintos tipos de cargo sin repetir
 	insert into sucursales.TipoDeCargo(tipo)
@@ -178,6 +182,42 @@ begin
     drop table if exists sucursales.#empleado_temp;   
 end;
 go
--- Ejecuci�n del procedimiento con el archivo especificado
+--Ejecutamos el procedimiento con el archivo especificado
 exec sucursales.ImportarEmpleado @rutaxlsx = 'C:\Users\lucia\Desktop\Bases\TP_integrador_Archivos\Informacion_complementaria.xlsx';
+go
+
+--Creamos el store procedure para importar los medios de pago
+create or alter procedure ventas.ImportarMedioDePago
+    @rutaxlsx nvarchar(max)
+as
+begin
+    --Creamos tabla temporal para almacenar los datos del Excel
+    create table #MedioDePagoTemp (
+        tipo varchar(40)
+    );
+    declare @sql nvarchar(max);
+    --Preparamos la consulta dinámica para leer el Excel usando OPENROWSET
+    set @sql = '
+        insert into #MedioDePagoTemp (tipo)
+        select 
+            [F1] tipo
+        from openrowset(
+            ''microsoft.ace.oledb.12.0'',
+            ''excel 12.0; hdr=yes; database=' + @rutaxlsx + ''',
+            ''select * from [medios de pago$B2:B100]''
+        )';
+	--Ejecutamos la consulta dinámica
+    exec sp_executesql @sql;
+    --Insertamos los registros válidos en la tabla de MedioDePago
+    insert into ventas.MedioDePago (tipo)
+    select tipo
+    from #MedioDePagoTemp
+    --Eliminamos la tabla temporal
+    drop table if exists ventas.#medio_pago_temp;
+end;
+go
+--Ejecutamos el procedimiento con el archivo especificado
+exec ventas.ImportarMedioDePago @rutaxlsx = 'C:\Users\lucia\Desktop\Bases\TP_integrador_Archivos\Informacion_complementaria.xlsx';
+go
+
 
