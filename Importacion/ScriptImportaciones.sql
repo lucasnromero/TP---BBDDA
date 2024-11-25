@@ -316,5 +316,45 @@ go
 exec productos.ImportarProductosImportados @rutaxlsx = 'C:\Users\lucia\Desktop\Bases\TP_integrador_Archivos\Productos\Productos_importados.xlsx'
 go
 
-
+--Creamos el store procedure para importar el catalogo
+create or alter procedure productos.ImportarCatalogo
+    @rutacsv nvarchar(max)
+as
+begin
+    create table #ProductosTemp(
+		id int,
+        categoria varchar(40),
+        nombre nvarchar(100),
+        precio decimal(10,2),
+        precio_referencia decimal(10,2),
+        unidad_referencia varchar(50),
+        fecha smalldatetime
+    );
+    declare @sql nvarchar(max);
+	--Preparamos la consulta dinámica para leer el Excel usando bulk insert
+    set @sql = '
+        bulk insert #ProductosTemp
+        from ''' + @rutacsv + '''
+        with (
+            format = ''csv'',
+            fieldterminator = '','',
+            rowterminator = ''0x0a'',
+            firstrow = 2,
+            codepage = ''65001''
+        )';
+	--Ejecutamos la consulta dinámica
+    exec sp_executesql @sql;
+	--Insertamos los registros desde la tabla temporal a la de Productos sin duplicados
+    insert into productos.Producto(id_linea_de_producto, nombre, precio, precio_referencia, unidad_referencia, fecha)
+    select (select id from productos.LineaDeProducto where categoria = t.categoria ), t.nombre, t.precio, t.precio_referencia, t.unidad_referencia, t.fecha
+    from #ProductosTemp as t
+    where not exists (select 1 from productos.Producto as p
+    where p.nombre = t.nombre);
+	--Elminamos la tabla temporal
+    drop table if exists #ProductosTemp;
+end;
+go
+--Ejecutamos el procedimiento con el archivo y tipo de cambio especificados
+exec productos.ImportarCatalogo @rutacsv = 'C:\Users\lucia\Desktop\Bases\TP_integrador_Archivos\Productos\catalogo.csv'; 
+go
 
