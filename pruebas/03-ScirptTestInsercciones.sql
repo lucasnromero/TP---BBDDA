@@ -91,23 +91,25 @@ exec ventas.InsertarTipoDeFactura 'C'
 --Ejecuta correctamente e inserta el tipo de factura en la base de datos
 
 --Test para la tabla de linea de producto
-exec productos.InsertarLineaDeProducto 'Computadoras'
+exec productos.InsertarLineaDeProducto 'Computadoras','Notebook'
 --Ejecuta correctamente e inserta la linea de producto en la base de datos
-exec productos.InsertarLineaDeProducto 'Computadoras'
+exec productos.InsertarLineaDeProducto 'Computadoras','Notebook'
 --No inserta y devuelve un mensaje ya que existe la linea de producto en la base de datos
-exec productos.InsertarLineaDeProducto 'Heladeras'
+exec productos.InsertarLineaDeProducto 'Computadoras','Procesador'
 --Ejecuta correctamente e inserta la linea de producto en la base de datos
-exec productos.InsertarLineaDeProducto 'Ventiladores'
+exec productos.InsertarLineaDeProducto 'Heladeras','Heladera A+'
+--Ejecuta correctamente e inserta la linea de producto en la base de datos
+exec productos.InsertarLineaDeProducto 'Ventiladores','Industrial'
 --Ejecuta correctamente e inserta la linea de producto en la base de datos
 
 --Test para la tabla de productos
-exec productos.InsertarProducto 1,'Notebook','Lenovo s120',840234.24
+exec productos.InsertarProducto 1,'Lenovo s120',840234.24
 --Ejecuta correctamente e inserta el producto en la base de datos con datos por defecto
-exec productos.InsertarProducto 1,'Procesador','Intel I7',340500
+exec productos.InsertarProducto 2,'Intel I7',340500
 --Ejecuta correctamente e inserta el producto en la base de datos con datos por defecto
-exec productos.InsertarProducto 2,'Heladera A+','NEBA 360L',550000,1527,'litros','2024-11-16'
+exec productos.InsertarProducto 3,'NEBA 360L',550000,1527,'litros','2024-11-16'
 --Ejecuta correctamente e inserta el producto en la base de datos con datos que vienen de lista
-exec productos.InsertarProducto 3,'Industrial','Axel M3',40299.99
+exec productos.InsertarProducto 4,'Axel M3',40299.99
 --Ejecuta correctamente e inserta el producto en la base de datos con datos por defecto
 
 --Tests para la venta completa, incluye venta, detalle de venta y factura
