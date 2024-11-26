@@ -1,5 +1,8 @@
+--Este script se encarga de ejecutar los store procedures de las eliminaciones
+--Este script solo funciona si no realizamos la importacion de los datos, este script va despues del script de Test de Insercciones
+
 --Nos posicionamos en la base de datos
-use g05com2900
+use com2900g05
 go
 
 --Creamos los test para probar las eliminaciones
