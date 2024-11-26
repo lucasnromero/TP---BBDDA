@@ -1,5 +1,7 @@
+--Este script se encarga de crear todos los store procedures y ejecutarlos para las importaciones en las tablas de la base de datos
+
 --Nos posicionamos en la base datos
-use g05com2900
+use com2900g05
 go
 
 --Configuramos los permisos para usar OPENROWSET
@@ -40,9 +42,10 @@ begin
 	exec sp_executesql @sql;
     --Insertamos las líneas de producto en la tabla de LineaDeProducto
     insert into productos.LineaDeProducto(linea,categoria)
-    select linea,categoria
-    from #LineaDeProductoTemp
-    where linea is not null and linea <> '';
+    select distinct t.linea,t.categoria
+    from #LineaDeProductoTemp as t
+    where not exists (select 1 from productos.LineaDeProducto as l
+	where l.linea = t.linea and l.categoria = t.categoria);
     --Limpiamos la tabla temporal
     drop table #LineaDeProductoTemp;
 end;
@@ -489,3 +492,5 @@ go
 --Ejecutamos el procedimiento con el archivo y tipo de cambio especificados
 exec ventas.ImportarVentas @rutacsv = 'C:\Users\lucia\Desktop\Bases\TP_integrador_Archivos\Ventas_registradas.csv'; 
 go
+
+
