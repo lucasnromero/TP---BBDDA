@@ -1,5 +1,7 @@
+--Este script se encarga de crear todos los store procedures para las eliminaciones en las tablas de la base de datos
+
 --Nos posicionamos en la base de datos
-use g05com2900
+use com2900g05
 go
 
 --Creamos los store procedures de eliminacion para el esquema de clientes
