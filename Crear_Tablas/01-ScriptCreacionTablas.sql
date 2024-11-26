@@ -122,7 +122,7 @@ create table sucursales.Turno (
 );
 go
 
---Cramos la tabla para los empleados del esquema sucursales
+--Creamos la tabla para los empleados del esquema sucursales
 create table sucursales.Empleado (
     legajo int primary key,
     id_genero int,
