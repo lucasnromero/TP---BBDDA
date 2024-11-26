@@ -58,7 +58,8 @@ open symmetric key EmployeeKey decryption by password = 'ClaveSegura123!';
 update sucursales.Empleado
 set dni = EncryptByKey(Key_GUID('EmployeeKey'), dni),
     cuil = EncryptByKey(Key_GUID('EmployeeKey'), cuil),
-    email_personal = EncryptByKey(Key_GUID('EmployeeKey'), email_personal);
+    email_personal = EncryptByKey(Key_GUID('EmployeeKey'), email_personal),
+    email_empresa = EncryptByKey(Key_GUID('EmployeeKey'), email_empresa);
 close symmetric key EmployeeKey;
 go
 
@@ -67,7 +68,8 @@ open symmetric key EmployeeKey decryption by password = 'ClaveSegura123!';
 update sucursales.Empleado
 set dni = Convert(nvarchar, DecryptByKey(dni)),
        cuil = Convert(nvarchar, DecryptByKey(cuil)),
-       email_personal = Convert(nvarchar, DecryptByKey(email_personal))
+       email_personal = Convert(nvarchar, DecryptByKey(email_personal)),
+       email_empresa = Convert(nvarchar, DecryptByKey(email_empresa));
 from sucursales.Empleado;
 close symmetric key EmployeeKey;
 go
