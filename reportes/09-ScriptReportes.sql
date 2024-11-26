@@ -1,5 +1,7 @@
+--Este script se encarga de crear todos los store procedures junto algunas vistas para los reportes de las tablas de la base de datos
+
 --Nos posicionamos en la base datos
-use g05com2900
+use com2900g05
 go
 
 --Creamos la vista del reporte Futuro que incluye una venta completa
@@ -254,11 +256,13 @@ begin
     select
 		(
 		select
+			v.Sucursal as Sucursal,
 			count(*) as CantidadDeVentas,
 			sum(v.Costo) as TotalAcumulado
 		from ventas.VentaCompleta as v
 		inner join clientes.Ciudad as c on c.nombre = v.Sucursal
 		where Fecha = @fecha and c.id = @sucursal
+		group by v.Sucursal
 		for xml path('Resumen'),type
 		),
 		--Obtenemos el detalle de las ventas para la fecha y la sucursal específicas
@@ -277,8 +281,8 @@ begin
 		Fecha as 'Venta/Fecha',
 		Hora as 'Venta/Hora',
 		[Medio de Pago] as 'Venta/MedioDePago',
-		Empleado as 'Venta/Empleado',
-		Sucursal as 'Venta/Sucursal'
+		Empleado as 'Venta/Empleado'
+		--Sucursal as 'Venta/Sucursal'
 		from ventas.VentaCompleta as v
 		inner join clientes.Ciudad as c on c.nombre = v.Sucursal
 		where Fecha = @fecha and c.id = @sucursal
