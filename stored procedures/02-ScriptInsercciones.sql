@@ -1,5 +1,7 @@
+--Este script se encarga de crear todos los store procedures junto algunas funciones y triggers para las insercciones en las tablas de la base de datos
+
 --Nos posicionamos en la base datos
-use g05com2900
+use com2900g05
 go
 
 --Creamos los store procedures de inserccion para el esquema de clientes, si existen los actualizamos
