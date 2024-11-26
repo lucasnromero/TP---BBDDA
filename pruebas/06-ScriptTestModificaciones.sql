@@ -14,12 +14,12 @@ exec clientes.ActualizarTipoDeCliente 1,'Cliente Premium';
 --No actualiza y muestra un mensaje ya que el tipo de cliente existe en la base de dato
 
 --Test para la tabla Ciudad
-exec clientes.ActualizarCiudad 1,'Córdoba';
+exec clientes.ActualizarCiudad 1,'CÃ³rdoba';
 --Actualiza correcamente la ciudad en la base de datos
-exec clientes.ActualizarCiudad 1,'Córdoba';
+exec clientes.ActualizarCiudad 1,'CÃ³rdoba';
 --No actualiza y muestra un mensaje ya que la ciudad existe en la base de datos
 
---Test para la tabla Género
+--Test para la tabla GÃ©nero
 exec clientes.ActualizarGenero 1,'No Binario';
 --Actualiza correctamente el genero en la base de datos
 exec clientes.ActualizarGenero 1,'No Binario';
@@ -50,7 +50,7 @@ exec sucursales.ActualizarTurno 2,'Tarde';
 --No actualiza y muestra un mensaje ya que existe el turno en la base de datos
 
 --Test para la tabla Empleado
-exec sucursales.ActualizarEmpleado 25370440,1,1,2,'Laura','Gomez',34789012,'Calle de los Sueños 10','laura.gomez@gmail.com','lgomez@empresa.com';
+exec sucursales.ActualizarEmpleado 25370440,1,1,2,'Laura','Gomez',34789012,'Calle de los SueÃ±os 10','laura.gomez@gmail.com','lgomez@empresa.com';
 --Actualiza correctamente el empleado en la base de datos
 exec sucursales.ActualizarEmpleado 25370441,1,1,2,'Jorge','Rosito',34789012,'Calle Grovee','jorge.rosito@gmail.com','jrosito@empresa.com';
 --No actualiza y muestra un mensaje ya que existe un empleado con ese dni en la base de datos
