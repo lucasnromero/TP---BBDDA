@@ -1,3 +1,4 @@
+--DEPRECADO
 
 --Para ejecutar este script primero debio haber ejecutado el script de CreacionClientes
 
