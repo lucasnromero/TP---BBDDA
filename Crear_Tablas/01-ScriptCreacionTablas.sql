@@ -13,23 +13,25 @@
 
 --Trabajo práctico Integrador
 
+--Este cript se encarga de crear todas las tablas de la base de datos de la parte 3 del trabajo practico
+
 --Comience usando master y eliminando la base de datos
 
 use master
 go
 
 --Elimina la base de datos si esta creada    
-drop database if exists g05com2900
+drop database if exists com2900g05
 go
 
 --Apartir de aqui comienza el script para poder crear la base de datos y todas sus tablas
 
 --Creamos la base de datos
-create database g05com2900
+create database com2900g05
 go
 
 --Nos posicionamos en la base datos
-use g05com2900
+use com2900g05
 go
 
 --Creamos los esquemas para incluir las tablas segun categorias
@@ -62,7 +64,7 @@ go
 --Creamos la tabla para las ciudades del esquema clientes
 create table clientes.Ciudad (
     id int identity(1,1) primary key,
-	reemplazo varchar(60) unique,
+	reemplazo varchar(60),
     nombre varchar(60) not null unique
 );
 go
@@ -130,7 +132,7 @@ create table sucursales.Empleado (
 	direccion varchar(100) not null,
 	email_personal varchar(75) not null,
 	email_empresa varchar(75) not null,
-    cuil varchar(15) unique,
+    cuil varchar(15),
 	id_cargo int,
 	id_sucursal int,
 	id_turno int,
