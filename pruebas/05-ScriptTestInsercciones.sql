@@ -1,5 +1,8 @@
+--Este script se encarga de ejecutar los store procedures de las insercciones
+--Este script esta pensado para ejecutar antes de las importaciones de los datos
+
 --Nos posicionamos en la base de datos
-use g05com2900
+use com2900g05
 go
 
 --Creamos los test para probar las insercciones
@@ -41,11 +44,11 @@ exec clientes.InsertarCliente 2,2,2,'Lucas','Alonso',42885790,'2000-10-05','Sta 
 --Ejecuta correctamente e inserta el cliente en la base de datos
 
 --Test para la tabla de sucursales
-exec sucursales.InsertarSucursal 'Moron','Sarmiento 4321','Abierto 24 hs','1122334455'
+exec sucursales.InsertarSucursal 1,'Sarmiento 4321','Abierto 24 hs','1122334455'
 --Ejecuta correctamente e inserta la sucursal en la base de datos
-exec sucursales.InsertarSucursal 'Moron','Sarmiento 4321','Por la tarde','1544894940'
+exec sucursales.InsertarSucursal 1,'Sarmiento 4321','Por la tarde','1544894940'
 --No inserta y devuelve un mensaje ya que existe una sucursal con esa direccion en esa ciudad
-exec sucursales.InsertarSucursal 'Hurlingham','Vergara 3020','De 7 a 13 y de 15 a 19','0800-333-111'
+exec sucursales.InsertarSucursal 2,'Vergara 3020','De 7 a 13 y de 15 a 19','0800-333-111'
 --Ejecuta correctamente e inserta la sucursal en la base de datos
 
 --Test para la tabla de tipos de cargo
@@ -116,22 +119,22 @@ exec productos.InsertarProducto 4,'Axel M3',40299.99
 declare @productos ventas.venta_producto_type
 insert into @productos
 values (2,1),(3,1);
-exec ventas.InsertarVentaCompleta 1,25370440,1,1,@productos
+exec ventas.InsertarVentaCompleta 1,25370440,1,@productos
 delete from @productos
 --Ejecuta correctamente e inserta una venta de 2 productos en la base de datos
 insert into @productos
 values (2,3),(3,4),(1,2);
-exec ventas.InsertarVentaCompleta 4,25370440,1,1,@productos,'3214-124-12'
+exec ventas.InsertarVentaCompleta 4,25370440,1,@productos,'3214-124-12'
 delete from @productos
 --Ejecuta correctamente e inserta una venta de varios productos con codigo de factura en la base de datos
 insert into @productos
 values (2,1);
-exec ventas.InsertarVentaCompleta 2,25370441,1,1,@productos,'11-14-35'
+exec ventas.InsertarVentaCompleta 2,25370441,1,@productos,'11-14-35'
 delete from @productos
 --Ejecuta correctamente e inserta una venta de un producto en la base de datos
 insert into @productos
 values (4,4),(3,2);
-exec ventas.InsertarVentaCompleta 3,25370440,2,2,@productos
+exec ventas.InsertarVentaCompleta 3,25370440,2,@productos
 delete from @productos
 --Ejecuta correctamente e inserta una venta de 2 productos en la base de datos
 
