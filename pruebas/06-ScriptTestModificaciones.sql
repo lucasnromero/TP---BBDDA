@@ -62,9 +62,9 @@ exec ventas.ActualizarMedioDePago 2,'Transferencia Bancaria';
 --No actualiza y muestra un mensaje ya que existe el medio de pago en la base de datos
 
 --Test para la tabla TipoDeFactura
-exec ventas.ActualizarTipoDeFactura 1,'Factura C';
+exec ventas.ActualizarTipoDeFactura 1,'G';
 --Actualiza correctamene el tipo de factura en la base de datos
-exec ventas.ActualizarTipoDeFactura 2,'Factura C';
+exec ventas.ActualizarTipoDeFactura 2,'G';
 --No actualiza y muestra un mensaje ya que existe el tipo de factura en la base de datos
 
 --Test para la tabla LineaDeProducto
